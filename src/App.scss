@@ -1,0 +1,134 @@
+$event-bg: #fff;
+$event-border: darken(#6a4dff, 10%);
+$event-outline: #3b99fc;
+$event-color: #000;
+$event-border-radius: 5px;
+$event-padding: 2px 5px;
+$event-zindex: 4;
+
+$out-of-range-color: lighten(#333, 40%);
+$out-of-range-bg-color: #f5f5f5;
+
+$calendar-border: #e8e8e8;
+$cell-border: #e8e8e8;
+
+$border-color: #e8e8e8;
+
+@import "react-big-calendar/lib/sass/styles";
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap");
+
+.App {
+  font-family: "Quicksand", sans-serif;
+
+  background-color: #eceff6;
+  height: 100vh;
+  padding: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// alapértelmezett idő az eseménycellákban
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: red;
+}
+
+// event, nem lehet inner styled-ban mert a shadow nem jól jelenne meg
+.rbc-event {
+  z-index: 999;
+  border: 1px solid $event-border;
+  border-radius: 5px;
+  padding: 0;
+  box-shadow: 1px 2px 10px rgba(84, 51, 255, 0.3);
+  color: #5433ff;
+
+  &.rbc-selected {
+    background-color: #5433ff;
+    color: white;
+  }
+}
+
+// active in Day view
+.rbc-day-slot {
+  .rbc-event {
+    border: 1px solid $event-border;
+  }
+}
+
+.rbc-slot-selection {
+  z-index: 999;
+}
+
+// header alatti alapértelmezett allday eventek
+.rbc-allday-cell {
+  display: none;
+}
+
+.rbc-time-view {
+  border: none;
+  .rbc-time-header.rbc-overflowing {
+    border: none;
+    .rbc-time-header-content {
+      border: none;
+      .rbc-header {
+        border: none;
+        // height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-weight: 400;
+
+        &.rbc-today {
+          background: white;
+        }
+      }
+    }
+  }
+}
+
+.rbc-time-content {
+  border-right: 1px solid $cell-border;
+  border-top: none;
+  .rbc-time-gutter.rbc-time-column {
+    .rbc-timeslot-group {
+      border: none;
+    }
+  }
+}
+
+.rbc-day-slot {
+  &.rbc-time-column {
+    border-top: 1px solid $cell-border;
+    &.rbc-now.rbc-today {
+      background: white;
+    }
+  }
+
+  .rbc-timeslot-group {
+    z-index: 990;
+    .rbc-time-slot {
+      &:hover {
+        border: 0;
+        flex: 0 0;
+        cursor: pointer;
+        padding-left: 10px;
+
+        // background: #eeebff !important;
+
+        &:after {
+          content: "+ Schedule";
+          color: #5433ff;
+          font-size: 13px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
