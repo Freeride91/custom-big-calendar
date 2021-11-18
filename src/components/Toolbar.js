@@ -12,8 +12,9 @@ const ToolbarWrapper = styled.div`
   padding: 24px 16px 32px;
   padding-left: 50px;
 
-  @media screen and (max-width: 576px) {
-    padding-left: 16px;
+  @media (max-width: 576px) {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 `;
 
@@ -44,14 +45,29 @@ const IconButton = styled(Button)`
   align-items: center;
 `;
 
-const DateContent = styled.div`
+const DateContentDesktop = styled.div`
+  text-align: center;
   padding: 0 36px;
   font-size: 16px;
   font-weight: 700;
+  @media (max-width: 576px) {
+    display: none;
+  }
+`;
+
+const DateContentMobile = styled.div`
+  display: none;
+
+  @media (max-width: 576px) {
+    display: block;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 0 16px;
+  }
 `;
 
 export const Toolbar = (props) => {
-  console.log(props);
   const { date, view: currentView, onView } = props;
 
   // const changeToDayView = () => {
@@ -133,7 +149,11 @@ export const Toolbar = (props) => {
         <IconButton onClick={goToPrevious}>
           <LeftIcon />
         </IconButton>
-        <DateContent>{moment(date).format("MMMM YYYY")}</DateContent>
+        <DateContentMobile>
+          {moment(date).format("YYYY")}
+          <br /> {moment(date).format("MMMM D")}
+        </DateContentMobile>
+        <DateContentDesktop>{moment(date).format("YYYY MMMM")}</DateContentDesktop>
         <IconButton onClick={goToNext}>
           <RightIcon />
         </IconButton>

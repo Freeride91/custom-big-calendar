@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./App.scss";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import huLocale from "moment/locale/hu";
 import { Toolbar } from "./components/Toolbar";
+import Dropdown from "./components/Dropdown";
+import { usePopper } from "react-popper";
+import useOnClickOutside from "./useOnClickOutside";
+import { createPortal } from "react-dom";
 
 moment.locale("hu", {
   week: {
@@ -57,21 +61,112 @@ function MyHeader({ date }) {
 const StyledEvent = styled.div`
   z-index: 999;
   height: 100%;
-  padding: 3px;
+  padding: 10px 5px 5px 5px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
+  position: relative;
+  overflow: visible;
 `;
 
-function MyEvent({ event }) {
+const PopperContainer = styled.div`
+  display: ${(props) => (props.visible ? "inline-block" : "none")};
+
+  width: 200px;
+  height: 85px;
+
+  flex-direction: column;
+  justify-content: space-between;
+
+  background-color: #ffffff;
+  box-shadow: 1px 1px 10px rgba(84, 51, 255, 0.3);
+  border-radius: 5px;
+  padding: 14px;
+
+  z-index: 9999;
+`;
+
+const PopperDateWrapper = styled.div`
+  font-size: 12px;
+  font-weight: 500;
+  color: black;
+`;
+
+const PopperButtonsWrapper = styled.div`
+  font-size: 10px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  color: black;
+  padding: 12px;
+  border-top: 1px solid #e8e8e8;
+
+  .red {
+    color: red;
+  }
+`;
+
+function MyEvent(props) {
+  const [visible, setVisibility] = useState(false);
+
+  const referenceRef = useRef(null);
+  const popperRef = useRef(null);
+
+  const { styles, attributes, update } = usePopper(referenceRef.current, popperRef.current, {
+    placement: "right",
+    strategy: "absolute",
+    modifiers: [
+      {
+        name: "offset",
+        enabled: true,
+        options: {
+          offset: [20, -10],
+        },
+      },
+    ],
+  });
+
+  const handleEventClick = () => {
+    setVisibility(!visible);
+    update();
+  };
+
+  const handleClose = () => {
+    setVisibility(false);
+  };
+
+  const refForOutsideClick = useRef();
+  useOnClickOutside(refForOutsideClick, handleClose);
+
+  const containerStyle = {
+    ...styles.popper,
+    zIndex: 99999,
+  };
+
   return (
-    <StyledEvent>
-      {`${moment(event.start).format("HH:mm")} - ${moment(event.end).format("HH:mm")}`}
-    </StyledEvent>
+    <>
+      {createPortal(
+        <div ref={popperRef} style={containerStyle} {...attributes.popper}>
+          <PopperContainer style={styles.offset} visible={visible}>
+            <PopperDateWrapper>Tuesday, 16 February 2021</PopperDateWrapper>
+            <PopperButtonsWrapper>
+              <span className="red">Delete</span>
+              <span>Manage</span>
+            </PopperButtonsWrapper>
+          </PopperContainer>
+        </div>,
+        document.getElementById("portal-target")
+      )}
+
+      <StyledEvent ref={referenceRef} onClick={handleEventClick}>
+        {`${moment(props.event.start).format("HH:mm")} - ${moment(props.event.end).format(
+          "HH:mm"
+        )}`}
+      </StyledEvent>
+    </>
   );
 }
 
 function App() {
-  const [windowWidth, setWindowWidth] = useState(0);
   const [currentView, setCurrentView] = useState(DEFAULT_VIEW);
 
   let resizeWindow = () => {
@@ -90,23 +185,19 @@ function App() {
   }, []);
 
   const [events, setEvents] = useState([
-    {
-      start: moment("2021-11-04 12:30").toDate(),
-      end: moment("2021-11-04 14:30").toDate(),
-      title: "Some event",
-    },
-    {
-      start: moment("2021-11-04 15:30").toDate(),
-      end: moment("2021-11-04 17:30").toDate(),
-      title: "Some event",
-    },
+    // {
+    //   start: moment("2021-11-17 15:30").toDate(),
+    //   end: moment("2021-11-17 18:30").toDate(),
+    //   title: "Some event",
+    // },
   ]);
 
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
   const handleSlotClicked = (slotInfo) => {
+    setSelectedEvent(null);
     setEvents([...events, { start: slotInfo.start, end: slotInfo.end, title: "Added event" }]);
   };
-
-  console.log("Current view: " + currentView);
 
   return (
     <div className="App">
@@ -129,7 +220,10 @@ function App() {
           onSelectSlot={handleSlotClicked}
           drilldownView={null}
           scrollToTime={defaultScrollToTime}
+          // selected={selectedEvent}
+          // onSelectEvent={(event) => setSelectedEvent(event)}
         />
+        <div id="portal-target" />
       </CalendarWrapper>
     </div>
   );
